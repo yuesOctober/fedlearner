@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fedlearner-scheduler
+  name: fedlearner-scheduler
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fedlearner-scheduler
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fedlearner-scheduler
+    spec:
+      containers:
+        - args: []
+          command:
+            - /app/deploy/scripts/run_scheduler.sh
+          image: hub.byted.org/fedlearner/fedlearner_scheduler:v1.0.0
+          imagePullPolicy: IfNotPresent
+          name: fedlearner-scheduler
+          ports:
+            - containerPort: 50051
+          resources:
+            limits:
+              cpu: "4"
+              memory: 4Gi
+            requests:
+              cpu: "4"
+              memory: 4Gi
+      restartPolicy: Always
+      serviceAccountName: fedlearner-platform
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fedlearner-scheduler
+  namespace: default
+  labels:
+    app: fedlearner-scheduler
+spec:
+  type: NodePort
+  selector:
+    app: fedlearner-scheduler
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
