@@ -104,6 +104,9 @@ class Bridge(object):
     def _client_daemon_fn(self):
         shutdown = [False]
         generator = None
+        channel = make_insecure_channel(
+            self._remote_address, ChannelType.REMOTE)
+        client = tws_grpc.TrainerWorkerServiceStub(channel)
 
         def shutdown_fn():
             shutdown[0] = True
@@ -132,7 +135,7 @@ class Bridge(object):
                                       item.seq_num)
                         yield item
 
-                generator = self._client.StreamTransmit(iterator())
+                generator = client.StreamTransmit(iterator())
                 for response in generator:
                     if response.status.code != common_pb.STATUS_SUCCESS:
                         raise RuntimeError("Trainsmit failed with %d" %
@@ -156,6 +159,10 @@ class Bridge(object):
                     "starting from seq_num=%s", len(resend_list),
                     resend_list and resend_list[0].seq_num or "NaN")
                 time.sleep(1)
+                # discard client before retry
+                channel = make_insecure_channel(
+                    self._remote_address, ChannelType.REMOTE)
+                client = tws_grpc.TrainerWorkerServiceStub(channel)
                 self._check_remote_heartbeat()
 
     def _transmit(self, msg):
