@@ -104,8 +104,8 @@ session_manager.SessionManager._restore_checkpoint = new_restore_checkpoint
 old_CheckpointSaverHook_after_create_session = \
     CheckpointSaverHook.after_create_session
 
-def _new_CheckpointSaverHook_after_create_session(self, session, coord):
-    global_step = session.run(self._global_step_tensor)
+def _new_CheckpointSaverHook_after_create_session(self, sess, coord):
+    global_step = sess.run(self._global_step_tensor)
     # We do write graph and saver_def at the first call of before_run.
     # We cannot do this in begin, since we let other hooks to change graph and
     # add variables in begin. Graph is finalized after all begin calls.
@@ -121,7 +121,7 @@ def _new_CheckpointSaverHook_after_create_session(self, session, coord):
     self._summary_writer.add_meta_graph(meta_graph_def)
     # The checkpoint saved here is the state at step "global_step".
     logging.info('Skip the writing of [checkpoint@%d]', global_step)
-    # self._save(session, global_step)
+    # self._save(sess, global_step)
     self._timer.update_last_triggered_step(global_step)
 
 CheckpointSaverHook.after_create_session = \
