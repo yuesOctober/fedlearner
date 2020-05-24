@@ -17,6 +17,12 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)-15s [%(filename)s:%(lineno)d] %(levelname)s %(message)s'
+)
+
 import unittest
 import threading
 import tensorflow.compat.v1 as tf
